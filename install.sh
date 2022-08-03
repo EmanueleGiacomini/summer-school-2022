@@ -38,7 +38,7 @@ cd ${MY_PATH}/simulation
 ./03_compile.sh
 
 # print info
-if [[ "${UBUNTU_OS}" == "false" ]]; then
+if [[ "${UBUNTU_OS}" == "true" ]]; then
 
     echo -e "${RED}The task requires Singularity, but we don't have automated installation of Singularity for non-Ubuntu OS. Install Singularity manually for your OS:${NC}"
     echo -e "${RED}  - Official how-to:                        https://docs.sylabs.io/guides/3.0/user-guide/installation.html${NC}"

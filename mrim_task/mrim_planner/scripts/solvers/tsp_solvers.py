@@ -268,13 +268,23 @@ class TSPSolver3D():
             # Prepare positions of the viewpoints in the world
             positions = np.array([vp.pose.point.asList() for vp in viewpoints])
 
-            raise NotImplementedError('[STUDENTS TODO] KMeans clustering of viewpoints not implemented. You have to finish it on your own')
             # Tips:
             #  - utilize sklearn.cluster.KMeans implementation (https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html)
             #  - after finding the labels, you may want to swap the classes (e.g., by looking at the distance of the UAVs from the cluster centers)
 
             # TODO: fill 1D list 'labels' of size len(viewpoints) with indices of the robots
-            labels = [randint(0, k - 1) for vp in viewpoints]
+            model = KMeans(k).fit(positions)
+            print("labels=", model.labels_)
+            labels = model.labels_
+
+            centers = model.cluster_centers_
+            print("centers", centers)
+            start_pose0 = np.array([problem.start_poses[0].position.x,problem.start_poses[0].position.y, problem.start_poses[0].position.z])
+            d0 = np.linalg.norm(centers[0, :]-start_pose0)
+            d1 = np.linalg.norm(centers[1, :]-start_pose0)
+            if d1 < d0:
+                labels = labels ^ 1
+            #labels = [randint(0, k - 1) for vp in viewpoints]
 
         ## | -------------------- Random clustering ------------------- |
         else:

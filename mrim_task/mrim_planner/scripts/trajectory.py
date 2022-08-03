@@ -201,7 +201,7 @@ class TrajectoryUtils():
                 #  - do not forget to wrap angle to <-pi, pi) (see/use wrapAngle() in utils.py)
 
                 # [STUDENTS TODO] Change variable 'hdg_interp', nothing else
-                hdg_interp = waypoints[0].heading
+                hdg_interp = wrapAngle(subtraj[0].heading + float(i) / len(subtraj) * wrapAngle(subtraj[-1].heading - subtraj[0].heading))
 
                 # replace heading
                 hdg_from   = hdg_interp
@@ -444,13 +444,15 @@ class TrajectoryUtils():
             sampling_step = trajectory.dT
 
             # STUDENTS TODO: Sample the path parametrization 'toppra_trajectory' (instance of TOPPRA library).
-            raise NotImplementedError('[STUDENTS TODO] Trajectory sampling not finished. You have to implement it on your own.')
+            #raise NotImplementedError('[STUDENTS TODO] Trajectory sampling not finished. You have to implement it on your own.')
             # Tips:
             #  - check documentation for TOPPRA (look for eval() function): https://hungpham2511.github.io/toppra/index.html
             #  - use 'toppra_trajectory' and the predefined sampling step 'sampling_step'
 
-            samples = [] # [STUDENTS TODO] Fill this variable with trajectory samples
-
+            #samples = [] # [STUDENTS TODO] Fill this variable with trajectory samples
+            print(f"sampling step={sampling_step}")
+            samples = [toppra_trajectory.eval(i) for i in np.arange(0, toppra_trajectory.duration, sampling_step)]
+            print("samples=", samples)
             # Convert to Trajectory class
             poses      = [Pose(q[0], q[1], q[2], q[3]) for q in samples]
             trajectory = self.posesToTrajectory(poses)
@@ -603,7 +605,7 @@ class TrajectoryUtils():
         ## |  [COLLISION AVOIDANCE METHOD #2]: Delay UAV with shorter trajectory at start until there is no collision occurring  |
         elif method == 'delay_till_no_collisions_occur':
 
-            raise NotImplementedError('[STUDENTS TODO] Collision prevention method \'delay_till_no_collisions_occur\' not finished. You have to finish it on your own.')
+
             # Tips:
             #  - you might select which trajectory it is better to delay
             #  - the smallest delay step is the sampling step stored in variable 'self.dT'
@@ -612,9 +614,20 @@ class TrajectoryUtils():
             traj_times = [t.getTime() for t in trajectories]
             traj_lens  = [t.getLength() for t in trajectories]
 
+            #raise NotImplementedError('[STUDENTS TODO] Collision prevention method \'delay_till_no_collisions_occur\' not finished. You have to finish it on your own.')
+
             # Decide which UAV should be delayed
             # [STUDENTS TODO] CHANGE BELOW
             delay_robot_idx, nondelay_robot_idx = 0, 1
+            if traj_times[1] < traj_times[0]:
+                delay_robot_idx = 0
+                nondelay_robot_idx = 1
+            else:
+                delay_robot_idx = 1
+                nondelay_robot_idx = 0
+
+            print(f"dr_idx={delay_robot_idx}, ndr_idx={nondelay_robot_idx}")
+            print("traj_times=", traj_times)
 
             # TIP: use function `self.trajectoriesCollide()` to check if two trajectories are in collision
             collision_flag, collision_idx = \
@@ -622,15 +635,21 @@ class TrajectoryUtils():
 
             i = 0
             while collision_flag:
+                delay_t += delay_step
+                # TIP: use function `trajectory.delayStart(X)` to delay a UAV at the start location by X seconds
+                trajectories[delay_robot_idx].delayStart(delay_step)
 
+                collision_flag, collision_idx = \
+                    self.trajectoriesCollide(trajectories[delay_robot_idx], trajectories[nondelay_robot_idx],
+                                             safety_distance)
                 # delay the shorter-trajectory UAV at the start point by sampling period
-
-                if i < 10:
+                '''if i < 10:
                     delay_t += delay_step
                     # TIP: use function `trajectory.delayStart(X)` to delay a UAV at the start location by X seconds
                     trajectories[delay_robot_idx].delayStart(delay_step)
+                    print(f"delay_t={delay_t}")
                 else:
-                    collision_flag = False
+                    collision_flag = False'''
 
         # # #}
 
